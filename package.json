@@ -1,0 +1,11 @@
+{
+  "name": "weather-station-server",
+  "version": "1.0.0",
+  "description": "白沙屯媽祖移動氣象站專屬伺服器",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
