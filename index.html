@@ -31,7 +31,7 @@
 
     #app-container {
         width: 100%;
-        max-width: 800px;
+        max-width: 1000px; /* 【修正】改回 1000px，讓上方 3 張卡片有足夠空間並排 */
         background-color: #111111; 
         border-radius: 15px;
         padding: 20px;
@@ -78,7 +78,7 @@
 
     .dashboard {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr); /* 【修正】改為 3 欄，恢復第一排 3 張卡片的完美比例 */
         gap: 20px;
         width: 100%;
     }
@@ -118,6 +118,13 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+
+    /* 【修正】補回被誤刪的酷熱指數表情符號樣式 */
+    .emoji-face {
+        font-size: 70px;
+        line-height: 1;
+        filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
     }
 
     .map-container {
@@ -164,11 +171,13 @@
     #loading, #error-msg { text-align: center; padding: 20px; font-size: 15px; width: 100%; grid-column: 1 / -1; }
     #error-msg { color: #EF4444; display: none; }
 
+    /* 平板縮放設定 */
     @media (max-width: 768px) {
         .dashboard { grid-template-columns: repeat(2, 1fr); }
         .card-humidity { grid-column: 1 / -1; }
     }
     
+    /* 手機縮放設定 */
     @media (max-width: 550px) {
         .dashboard { grid-template-columns: 1fr; }
         .card-humidity { grid-column: auto; }
@@ -194,7 +203,7 @@
 </div>
 
 <script>
-    // 直接呼叫我們自己的 Node.js 後端 API
+    // 呼叫我們自己的 Node.js 後端 API
     function getFetchUrl() {
         return `/api/weather`; 
     }
@@ -297,31 +306,21 @@
                 throw new Error('找不到測站資料或格式錯誤');
             }
 
-            // -------------------------------------------------------------
-            // 🔥 時間解析與 UTC+8 轉換邏輯
-            // -------------------------------------------------------------
-            const dateStr = parts[3]; // 例如: 202603261546
-            
-            // 1. 將字串拆解為年、月、日、時、分
+            // UTC+8 時間轉換邏輯
+            const dateStr = parts[3]; 
             const year = parseInt(dateStr.substring(0, 4), 10);
-            const month = parseInt(dateStr.substring(4, 6), 10) - 1; // JavaScript 的月份是從 0 開始的 (0=1月)
+            const month = parseInt(dateStr.substring(4, 6), 10) - 1; 
             const day = parseInt(dateStr.substring(6, 8), 10);
             const utcHour = parseInt(dateStr.substring(8, 10), 10);
             const utcMin = parseInt(dateStr.substring(10, 12), 10);
 
-            // 2. 將拆解出來的數字，建立成一個標準的「UTC 時間戳記」
             const utcTime = Date.UTC(year, month, day, utcHour, utcMin);
-            
-            // 3. 強制加上 8 小時的毫秒數 (8 * 60 * 60 * 1000 = 28,800,000 毫秒)，轉為台灣時間
-            const localTime = new Date(utcTime + 28800000);
+            const localTime = new Date(utcTime + 28800000); // 加上 8 小時毫秒數
 
-            // 4. 提取轉換後的時與分，並確保不足兩位數時補 0 (例如 9 變成 09)
-            // 這裡使用 getUTCHours 確保不受觀看者電腦的時區設定干擾，一律強制顯示 UTC+8 算出來的結果
             const displayHour = localTime.getUTCHours().toString().padStart(2, '0');
             const displayMin = localTime.getUTCMinutes().toString().padStart(2, '0');
 
             document.getElementById('update-time-text').innerText = `觀測時間: ${displayHour}:${displayMin} (自動更新中)`;
-            // -------------------------------------------------------------
 
             const t = parseFloat(parts[5]);      
             const rh = parseFloat(parts[6]);     
