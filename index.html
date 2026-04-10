@@ -31,7 +31,7 @@
 
     #app-container {
         width: 100%;
-        max-width: 1000px; /* 【修正】改回 1000px，讓上方 3 張卡片有足夠空間並排 */
+        max-width: 1000px; 
         background-color: #111111; 
         border-radius: 15px;
         padding: 20px;
@@ -42,7 +42,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 15px; /* 稍微縮小間距留給跑馬燈 */
         padding-bottom: 15px;
         border-bottom: 1px solid #2D2D2D;
     }
@@ -76,9 +76,38 @@
         font-weight: 500;
     }
 
+    /* 🔥 全新跑馬燈專屬 CSS 🔥 */
+    .marquee-container {
+        width: 100%;
+        overflow: hidden;
+        background: rgba(255, 215, 0, 0.1); /* 淡淡的進香黃色背景 */
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: 8px;
+        padding: 10px 0;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .marquee-content {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%; /* 讓文字一開始躲在最右邊畫面外 */
+        animation: marqueeScroll 25s linear infinite; /* 25秒跑完一圈，平滑無限循環 */
+        color: #FFD700; /* 亮黃色字體 */
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    /* 跑馬燈位移關鍵影格 */
+    @keyframes marqueeScroll {
+        0%   { transform: translate(0, 0); }
+        100% { transform: translate(-100%, 0); }
+    }
+
     .dashboard {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 【修正】改為 3 欄，恢復第一排 3 張卡片的完美比例 */
+        grid-template-columns: repeat(3, 1fr); 
         gap: 20px;
         width: 100%;
     }
@@ -120,7 +149,6 @@
         align-items: center;
     }
 
-    /* 【修正】補回被誤刪的酷熱指數表情符號樣式 */
     .emoji-face {
         font-size: 70px;
         line-height: 1;
@@ -167,17 +195,22 @@
         letter-spacing: 1px;
         font-weight: 500;
     }
+    
+    .sub-value-2 {
+        font-size: 12px;
+        color: #AAA;
+        margin-top: 6px;
+        font-weight: 500;
+    }
 
     #loading, #error-msg { text-align: center; padding: 20px; font-size: 15px; width: 100%; grid-column: 1 / -1; }
     #error-msg { color: #EF4444; display: none; }
 
-    /* 平板縮放設定 */
     @media (max-width: 768px) {
         .dashboard { grid-template-columns: repeat(2, 1fr); }
         .card-humidity { grid-column: 1 / -1; }
     }
     
-    /* 手機縮放設定 */
     @media (max-width: 550px) {
         .dashboard { grid-template-columns: 1fr; }
         .card-humidity { grid-column: auto; }
@@ -194,6 +227,12 @@
             白沙屯媽祖 移動氣象站（測試中）
         </h2>
         <div id="update-time-text">等待資料載入中...</div>
+    </div>
+
+    <div class="marquee-container">
+        <div class="marquee-content">
+            🚶‍♂️ 氣象君於進香期間每天早上 9 點到下午 5 點，我都會在路上跟大家作伴。 🌙 13日跟17日這兩天，氣象君也會在凌晨陪大家摸黑啟程，讓我們一起出發吧！
+        </div>
     </div>
 
     <div id="loading">📡 正在讀取觀測站資料...</div>
@@ -315,7 +354,7 @@
             const utcMin = parseInt(dateStr.substring(10, 12), 10);
 
             const utcTime = Date.UTC(year, month, day, utcHour, utcMin);
-            const localTime = new Date(utcTime + 28800000); // 加上 8 小時毫秒數
+            const localTime = new Date(utcTime + 28800000); 
 
             const displayHour = localTime.getUTCHours().toString().padStart(2, '0');
             const displayMin = localTime.getUTCMinutes().toString().padStart(2, '0');
@@ -362,7 +401,7 @@
                     <div>
                         <span class="main-value" style="color: ${hiInfo.color};">${isNaN(hi) || hi === -99 ? '--' : hi.toFixed(1)}</span><span class="unit" style="color: ${hiInfo.color};">°C</span>
                         <div class="sub-value" style="color: ${hiInfo.color}; font-size: 14px; font-weight: bold;">${hiInfo.text}</div>
-                        <div class="sub-value-2">HEAT INDEX</div>
+                        <div class="sub-value-2">FEELS LIKE</div>
                     </div>
                 </div>
                 
