@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>白沙屯媽祖 移動氣象站</title>
+<title>白沙屯媽祖 行動氣象儀</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -42,7 +42,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px; /* 稍微縮小間距留給跑馬燈 */
+        margin-bottom: 15px;
         padding-bottom: 15px;
         border-bottom: 1px solid #2D2D2D;
     }
@@ -76,30 +76,27 @@
         font-weight: 500;
     }
 
-    /* 🔥 全新跑馬燈專屬 CSS 🔥 */
+    /* 跑馬燈樣式 */
     .marquee-container {
         width: 100%;
         overflow: hidden;
-        background: rgba(255, 215, 0, 0.1); /* 淡淡的進香黃色背景 */
+        background: rgba(255, 215, 0, 0.1); 
         border: 1px solid rgba(255, 215, 0, 0.3);
         border-radius: 8px;
         padding: 10px 0;
         margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
     .marquee-content {
         display: inline-block;
         white-space: nowrap;
-        padding-left: 100%; /* 讓文字一開始躲在最右邊畫面外 */
-        animation: marqueeScroll 25s linear infinite; /* 25秒跑完一圈，平滑無限循環 */
-        color: #FFD700; /* 亮黃色字體 */
+        padding-left: 100%; 
+        animation: marqueeScroll 25s linear infinite; 
+        color: #FFD700; 
         font-size: 15px;
         font-weight: 700;
-        letter-spacing: 1px;
     }
 
-    /* 跑馬燈位移關鍵影格 */
     @keyframes marqueeScroll {
         0%   { transform: translate(0, 0); }
         100% { transform: translate(-100%, 0); }
@@ -123,7 +120,6 @@
         text-align: center;
         backdrop-filter: blur(8px);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        transition: transform 0.2s ease;
     }
 
     .card-full-width { grid-column: 1 / -1; }
@@ -176,14 +172,12 @@
         font-size: 26px; 
         font-weight: 700;
         color: #FFFFFF;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
 
     .unit {
         font-size: 18px;
         color: #FFFFFF;
         margin-left: 4px;
-        vertical-align: baseline;
         opacity: 0.9;
     }
 
@@ -192,19 +186,16 @@
         color: #BBB;
         text-transform: uppercase;
         margin-top: 10px;
-        letter-spacing: 1px;
         font-weight: 500;
     }
-    
+
     .sub-value-2 {
         font-size: 12px;
         color: #AAA;
         margin-top: 6px;
-        font-weight: 500;
     }
 
-    #loading, #error-msg { text-align: center; padding: 20px; font-size: 15px; width: 100%; grid-column: 1 / -1; }
-    #error-msg { color: #EF4444; display: none; }
+    #loading, #error-msg { text-align: center; padding: 20px; grid-column: 1 / -1; }
 
     @media (max-width: 768px) {
         .dashboard { grid-template-columns: repeat(2, 1fr); }
@@ -224,7 +215,7 @@
     <div id="main-header">
         <h2 class="header-title">
             <div class="live-dot"></div>
-            白沙屯媽祖 移動氣象站（測試中）
+            白沙屯媽祖 行動氣象儀(氣象君)（測試中）
         </h2>
         <div id="update-time-text">等待資料載入中...</div>
     </div>
@@ -242,9 +233,21 @@
 </div>
 
 <script>
-    // 呼叫我們自己的 Node.js 後端 API
     function getFetchUrl() {
         return `/api/weather`; 
+    }
+
+    // --- 🔥 氣象署標準體感溫度計算公式 🔥 ---
+    function calculateApparentTemp(T, RH, V) {
+        if (isNaN(T) || isNaN(RH) || isNaN(V) || T === -99) return null;
+        
+        // 1. 計算水氣壓 e (單位: hPa)
+        const e = (RH / 100) * 6.105 * Math.exp((17.27 * T) / (237.7 + T));
+        
+        // 2. 計算體感溫度 AT
+        const AT = 1.04 * T + 0.2 * e - 0.65 * V - 2.7;
+        
+        return Math.round(AT * 10) / 10;
     }
 
     function buildSVGTempGauge(temp) {
@@ -286,7 +289,7 @@
         const circum = 2 * Math.PI * radius;
         const dash = (hum / 100) * circum;
         return `
-        <svg viewBox="0 0 100 100" style="width:100%; height:100%; transform: rotate(-90deg); filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));">
+        <svg viewBox="0 0 100 100" style="width:100%; height:100%; transform: rotate(-90deg);">
             <circle cx="50" cy="50" r="${radius}" fill="#455A64" opacity="0.3" />
             <circle cx="50" cy="50" r="${radius}" fill="none" stroke="#0EA5E9" stroke-width="24" stroke-dasharray="${dash} ${circum}" opacity="0.85" />
             <circle cx="50" cy="50" r="26" fill="var(--card-bg)" />
@@ -294,12 +297,12 @@
         `;
     }
 
-    function getHeatIndexInfo(hi) {
-        if (hi === -99 || isNaN(hi)) return { text: '--', emoji: '🤔', color: '#FFFFFF' };
-        if (hi < 26) return { text: '安全', emoji: '😊', color: '#2ecc71' };       
-        if (hi < 32) return { text: '注意', emoji: '😅', color: '#f1c40f' };       
-        if (hi < 41) return { text: '極度注意', emoji: '🥵', color: '#e67e22' };   
-        if (hi < 54) return { text: '危險', emoji: '😱', color: '#e74c3c' };       
+    function getATInfo(at) {
+        if (at === null) return { text: '--', emoji: '🤔', color: '#FFFFFF' };
+        if (at < 26) return { text: '舒適', emoji: '😊', color: '#2ecc71' };       
+        if (at < 32) return { text: '警戒', emoji: '😅', color: '#f1c40f' };       
+        if (at < 41) return { text: '極度警戒', emoji: '🥵', color: '#e67e22' };   
+        if (at < 54) return { text: '危險', emoji: '😱', color: '#e74c3c' };       
         return { text: '極度危險', emoji: '💀', color: '#9b59b6' };                
     }
 
@@ -310,76 +313,50 @@
     async function getCityDistrict(lat, lon) {
         if (lat === -99 || lon === -99 || isNaN(lat) || isNaN(lon)) return '無法取得定位';
         if (lat === lastLat && lon === lastLon) return cachedLocationName;
-
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-TW`);
             const data = await res.json();
-            
             if (data && data.address) {
                 const city = data.address.city || data.address.county || data.address.state || '';
                 const district = data.address.town || data.address.suburb || data.address.village || data.address.borough || '';
                 cachedLocationName = `${city}${district}`.replace('台灣', ''); 
-                if (cachedLocationName === '') cachedLocationName = '未知地點';
-            } else {
-                cachedLocationName = '無法解析地址';
             }
-        } catch (e) {
-            console.error('地理編碼失敗:', e);
-            cachedLocationName = '地址解析失敗';
-        }
-        
-        lastLat = lat;
-        lastLon = lon;
+        } catch (e) { console.error(e); }
+        lastLat = lat; lastLon = lon;
         return cachedLocationName;
     }
 
     async function fetchWeather() {
         try {
             const response = await fetch(getFetchUrl());
-            if (!response.ok) throw new Error('網路請求失敗');
-            
             const text = await response.text();
             const parts = text.split(',');
 
-            if (parts.length < 19) {
-                throw new Error('找不到測站資料或格式錯誤');
-            }
+            if (parts.length < 19) throw new Error('格式錯誤');
 
-            // UTC+8 時間轉換邏輯
+            // 時間轉換 UTC+8
             const dateStr = parts[3]; 
             const year = parseInt(dateStr.substring(0, 4), 10);
             const month = parseInt(dateStr.substring(4, 6), 10) - 1; 
             const day = parseInt(dateStr.substring(6, 8), 10);
             const utcHour = parseInt(dateStr.substring(8, 10), 10);
             const utcMin = parseInt(dateStr.substring(10, 12), 10);
+            const localTime = new Date(Date.UTC(year, month, day, utcHour, utcMin) + 28800000);
+            document.getElementById('update-time-text').innerText = `觀測時間: ${localTime.getUTCHours().toString().padStart(2,'0')}:${localTime.getUTCMinutes().toString().padStart(2,'0')} (自動更新中)`;
 
-            const utcTime = Date.UTC(year, month, day, utcHour, utcMin);
-            const localTime = new Date(utcTime + 28800000); 
-
-            const displayHour = localTime.getUTCHours().toString().padStart(2, '0');
-            const displayMin = localTime.getUTCMinutes().toString().padStart(2, '0');
-
-            document.getElementById('update-time-text').innerText = `觀測時間: ${displayHour}:${displayMin} (自動更新中)`;
-
-            const t = parseFloat(parts[5]);      
-            const rh = parseFloat(parts[6]);     
-            const hi = parseFloat(parts[13]);    
+            // 抓取基礎數據
+            const t = parseFloat(parts[5]);      // TA_mvg
+            const rh = parseFloat(parts[6]);     // RH_mvg
+            const v = parseFloat(parts[9]);      // AVGCSPEED 風速
             const lat = parseFloat(parts[17]);   
             const lon = parseFloat(parts[18]);   
 
-            const hiInfo = getHeatIndexInfo(hi);
+            // 使用氣象署公式精算體感溫度
+            const at = calculateApparentTemp(t, rh, v);
+            const atInfo = getATInfo(at);
             const locationName = await getCityDistrict(lat, lon);
 
-            let mapHtml = '';
-            if (!isNaN(lat) && !isNaN(lon) && lat !== -99 && lon !== -99) {
-                mapHtml = `<iframe width="100%" height="100%" frameborder="0" style="border:0;" src="https://maps.google.com/maps?q=${lat},${lon}&hl=zh-TW&z=15&output=embed" allowfullscreen></iframe>`;
-            } else {
-                mapHtml = `<div style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:12px; color:#aaa;">無法定位地圖</div>`;
-            }
-
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('error-msg').style.display = 'none';
-            
             const dashboard = document.getElementById('dashboard');
             dashboard.style.display = 'grid';
 
@@ -396,11 +373,11 @@
                 <div class="card">
                     <div class="card-title">體感溫度</div>
                     <div class="widget-container">
-                        <div class="emoji-face">${hiInfo.emoji}</div>
+                        <div class="emoji-face">${atInfo.emoji}</div>
                     </div>
                     <div>
-                        <span class="main-value" style="color: ${hiInfo.color};">${isNaN(hi) || hi === -99 ? '--' : hi.toFixed(1)}</span><span class="unit" style="color: ${hiInfo.color};">°C</span>
-                        <div class="sub-value" style="color: ${hiInfo.color}; font-size: 14px; font-weight: bold;">${hiInfo.text}</div>
+                        <span class="main-value" style="color: ${atInfo.color};">${at === null ? '--' : at.toFixed(1)}</span><span class="unit" style="color: ${atInfo.color};">°C</span>
+                        <div class="sub-value" style="color: ${atInfo.color}; font-size: 14px; font-weight: bold;">${atInfo.text}</div>
                         <div class="sub-value-2">FEELS LIKE</div>
                     </div>
                 </div>
@@ -417,7 +394,7 @@
                 <div class="card card-full-width">
                     <div class="card-title">氣象站即時定位</div>
                     <div class="map-container">
-                        ${mapHtml}
+                        <iframe width="100%" height="100%" frameborder="0" style="border:0;" src="https://maps.google.com/maps?q=${lat},${lon}&hl=zh-TW&z=15&output=embed" allowfullscreen></iframe>
                     </div>
                     <div>
                         <span class="location-value">${locationName}</span>
@@ -425,17 +402,11 @@
                     </div>
                 </div>
             `;
-
-        } catch (error) {
-            console.error('資料更新錯誤:', error);
-        }
+        } catch (error) { console.error(error); }
     }
     
     fetchWeather();
-
-    // 每分鐘向伺服器更新一次
     setInterval(fetchWeather, 60000);
-
 </script>
 
 </body>
