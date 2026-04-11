@@ -195,7 +195,6 @@
         margin-top: 6px;
     }
 
-    /* ✅ 修正重點一：補回錯誤訊息的隱藏與紅色樣式設定 */
     #loading, #error-msg { text-align: center; padding: 20px; grid-column: 1 / -1; }
     #error-msg { color: #EF4444; display: none; }
 
@@ -358,11 +357,18 @@
             const atInfo = getATInfo(at);
             const locationName = await getCityDistrict(lat, lon);
 
-            // ✅ 修正重點二：資料成功載入時，強制將 error-msg 隱藏
             document.getElementById('loading').style.display = 'none';
             document.getElementById('error-msg').style.display = 'none';
             const dashboard = document.getElementById('dashboard');
             dashboard.style.display = 'grid';
+
+            // ✅ 修正重點：使用標準的 Google Maps URL 格式 https://maps.google.com/maps?q=${lat},${lon}
+            let mapHtml = '';
+            if (!isNaN(lat) && !isNaN(lon) && lat !== -99 && lon !== -99) {
+                mapHtml = `<iframe width="100%" height="100%" frameborder="0" style="border:0;" src="https://maps.google.com/maps?q=${lat},${lon}&hl=zh-TW&z=15&output=embed" allowfullscreen></iframe>`;
+            } else {
+                mapHtml = `<div style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:12px; color:#aaa;">無法定位地圖</div>`;
+            }
 
             dashboard.innerHTML = `
                 <div class="card">
@@ -370,53 +376,4 @@
                     <div class="widget-container">${buildSVGTempGauge(t)}</div>
                     <div>
                         <span class="main-value">${isNaN(t) || t === -99 ? '--' : t.toFixed(1)}</span><span class="unit">°C</span>
-                        <div class="sub-value">TEMPERATURE</div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-title">體感溫度</div>
-                    <div class="widget-container">
-                        <div class="emoji-face">${atInfo.emoji}</div>
-                    </div>
-                    <div>
-                        <span class="main-value" style="color: ${atInfo.color};">${at === null ? '--' : at.toFixed(1)}</span><span class="unit" style="color: ${atInfo.color};">°C</span>
-                        <div class="sub-value" style="color: ${atInfo.color}; font-size: 14px; font-weight: bold;">${atInfo.text}</div>
-                        <div class="sub-value-2">FEELS LIKE</div>
-                    </div>
-                </div>
-                
-                <div class="card card-humidity">
-                    <div class="card-title">相對濕度</div>
-                    <div class="widget-container">${buildSVGHumidity(rh)}</div>
-                    <div>
-                        <span class="main-value">${isNaN(rh) || rh === -99 ? '--' : Math.round(rh)}</span><span class="unit">%</span>
-                        <div class="sub-value">HUMIDITY</div>
-                    </div>
-                </div>
-                
-                <div class="card card-full-width">
-                    <div class="card-title">氣象站即時定位</div>
-                    <div class="map-container">
-                        <iframe width="100%" height="100%" frameborder="0" style="border:0;" src="http://googleusercontent.com/maps.google.com/${lat},${lon}&hl=zh-TW&z=15&output=embed" allowfullscreen></iframe>
-                    </div>
-                    <div>
-                        <span class="location-value">${locationName}</span>
-                        <div class="sub-value">CURRENT LOCATION</div>
-                    </div>
-                </div>
-            `;
-        } catch (error) { 
-            // ✅ 修正重點三：只有在發生錯誤時，才把 error-msg 打開顯示
-            console.error(error); 
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('error-msg').style.display = 'block';
-        }
-    }
-    
-    fetchWeather();
-    setInterval(fetchWeather, 60000);
-</script>
-
-</body>
-</html>
+                        <div
