@@ -195,7 +195,9 @@
         margin-top: 6px;
     }
 
+    /* ✅ 修正重點一：補回錯誤訊息的隱藏與紅色樣式設定 */
     #loading, #error-msg { text-align: center; padding: 20px; grid-column: 1 / -1; }
+    #error-msg { color: #EF4444; display: none; }
 
     @media (max-width: 768px) {
         .dashboard { grid-template-columns: repeat(2, 1fr); }
@@ -356,7 +358,9 @@
             const atInfo = getATInfo(at);
             const locationName = await getCityDistrict(lat, lon);
 
+            // ✅ 修正重點二：資料成功載入時，強制將 error-msg 隱藏
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-msg').style.display = 'none';
             const dashboard = document.getElementById('dashboard');
             dashboard.style.display = 'grid';
 
@@ -394,7 +398,7 @@
                 <div class="card card-full-width">
                     <div class="card-title">氣象站即時定位</div>
                     <div class="map-container">
-                        <iframe width="100%" height="100%" frameborder="0" style="border:0;" src="https://maps.google.com/maps?q=${lat},${lon}&hl=zh-TW&z=15&output=embed" allowfullscreen></iframe>
+                        <iframe width="100%" height="100%" frameborder="0" style="border:0;" src="http://googleusercontent.com/maps.google.com/${lat},${lon}&hl=zh-TW&z=15&output=embed" allowfullscreen></iframe>
                     </div>
                     <div>
                         <span class="location-value">${locationName}</span>
@@ -402,7 +406,12 @@
                     </div>
                 </div>
             `;
-        } catch (error) { console.error(error); }
+        } catch (error) { 
+            // ✅ 修正重點三：只有在發生錯誤時，才把 error-msg 打開顯示
+            console.error(error); 
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-msg').style.display = 'block';
+        }
     }
     
     fetchWeather();
