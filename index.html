@@ -376,4 +376,52 @@
                     <div class="widget-container">${buildSVGTempGauge(t)}</div>
                     <div>
                         <span class="main-value">${isNaN(t) || t === -99 ? '--' : t.toFixed(1)}</span><span class="unit">°C</span>
-                        <div
+                        <div class="sub-value">TEMPERATURE</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">體感溫度</div>
+                    <div class="widget-container">
+                        <div class="emoji-face">${atInfo.emoji}</div>
+                    </div>
+                    <div>
+                        <span class="main-value" style="color: ${atInfo.color};">${at === null ? '--' : at.toFixed(1)}</span><span class="unit" style="color: ${atInfo.color};">°C</span>
+                        <div class="sub-value" style="color: ${atInfo.color}; font-size: 14px; font-weight: bold;">${atInfo.text}</div>
+                        <div class="sub-value-2">FEELS LIKE</div>
+                    </div>
+                </div>
+                
+                <div class="card card-humidity">
+                    <div class="card-title">相對濕度</div>
+                    <div class="widget-container">${buildSVGHumidity(rh)}</div>
+                    <div>
+                        <span class="main-value">${isNaN(rh) || rh === -99 ? '--' : Math.round(rh)}</span><span class="unit">%</span>
+                        <div class="sub-value">HUMIDITY</div>
+                    </div>
+                </div>
+                
+                <div class="card card-full-width">
+                    <div class="card-title">氣象站即時定位</div>
+                    <div class="map-container">
+                        ${mapHtml}
+                    </div>
+                    <div>
+                        <span class="location-value">${locationName}</span>
+                        <div class="sub-value">CURRENT LOCATION</div>
+                    </div>
+                </div>
+            `;
+        } catch (error) { 
+            console.error(error); 
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-msg').style.display = 'block';
+        }
+    }
+    
+    fetchWeather();
+    setInterval(fetchWeather, 60000);
+</script>
+
+</body>
+</html>
